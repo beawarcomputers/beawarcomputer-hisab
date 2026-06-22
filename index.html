@@ -135,9 +135,49 @@ body{font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',sans-serif;backgrou
 .setup-card h3{font-size:14px;font-weight:600;margin-bottom:4px;}
 .setup-card p{font-size:12px;color:var(--text2);line-height:1.6;}
 .step-num{display:inline-block;width:22px;height:22px;background:var(--blue);color:#fff;border-radius:50%;font-size:11px;font-weight:600;text-align:center;line-height:22px;margin-right:6px;}
+
+/* PIN SCREEN */
+#pin-screen{position:fixed;inset:0;background:var(--blue);z-index:300;display:flex;flex-direction:column;align-items:center;justify-content:center;padding:24px;}
+#pin-screen.hide{display:none;}
+.pin-title{color:#fff;font-size:20px;font-weight:600;margin-bottom:6px;}
+.pin-sub{color:rgba(255,255,255,0.7);font-size:13px;margin-bottom:32px;}
+.pin-dots{display:flex;gap:14px;margin-bottom:32px;}
+.pin-dot{width:14px;height:14px;border-radius:50%;border:2px solid rgba(255,255,255,0.5);background:transparent;transition:background 0.15s;}
+.pin-dot.filled{background:#fff;border-color:#fff;}
+.pin-grid{display:grid;grid-template-columns:repeat(3,1fr);gap:12px;width:240px;}
+.pin-btn{height:64px;border-radius:var(--radius-lg);background:rgba(255,255,255,0.15);border:none;color:#fff;font-size:22px;font-weight:500;cursor:pointer;transition:background 0.1s;}
+.pin-btn:active{background:rgba(255,255,255,0.3);}
+.pin-clear{background:rgba(255,255,255,0.08);font-size:13px;}
+.pin-error{color:#ffcccc;font-size:13px;margin-top:16px;min-height:20px;}
 </style>
 </head>
 <body>
+
+<div id="pin-screen">
+  <div class="pin-title">Beawar Computer</div>
+  <div class="pin-sub">PIN daalo</div>
+  <div class="pin-dots">
+    <div class="pin-dot" id="d0"></div>
+    <div class="pin-dot" id="d1"></div>
+    <div class="pin-dot" id="d2"></div>
+    <div class="pin-dot" id="d3"></div>
+  </div>
+  <div class="pin-grid">
+    <button class="pin-btn" onclick="pinPress('1')">1</button>
+    <button class="pin-btn" onclick="pinPress('2')">2</button>
+    <button class="pin-btn" onclick="pinPress('3')">3</button>
+    <button class="pin-btn" onclick="pinPress('4')">4</button>
+    <button class="pin-btn" onclick="pinPress('5')">5</button>
+    <button class="pin-btn" onclick="pinPress('6')">6</button>
+    <button class="pin-btn" onclick="pinPress('7')">7</button>
+    <button class="pin-btn" onclick="pinPress('8')">8</button>
+    <button class="pin-btn" onclick="pinPress('9')">9</button>
+    <button class="pin-btn pin-clear" onclick="pinClear()">C</button>
+    <button class="pin-btn" onclick="pinPress('0')">0</button>
+    <button class="pin-btn pin-clear" onclick="pinBack()">⌫</button>
+  </div>
+  <div class="pin-error" id="pin-error"></div>
+</div>
 
 
 
@@ -195,6 +235,48 @@ body{font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',sans-serif;backgrou
 
 <script>
 var API_URL = 'https://script.google.com/macros/s/AKfycbzGIYr1u4mkBTN6GYU0-bIEX2AJ1Qye1noekeyGdlnZsQHjbGKAdd9IFgsrlVgidWPF/exec';
+var CORRECT_PIN = '9414';
+var pinEntry = '';
+
+function pinPress(n) {
+  if (pinEntry.length >= 4) return;
+  pinEntry += n;
+  updatePinDots();
+  if (pinEntry.length === 4) {
+    setTimeout(checkPin, 150);
+  }
+}
+
+function pinBack() {
+  pinEntry = pinEntry.slice(0, -1);
+  updatePinDots();
+}
+
+function pinClear() {
+  pinEntry = '';
+  updatePinDots();
+  document.getElementById('pin-error').textContent = '';
+}
+
+function updatePinDots() {
+  for (var i = 0; i < 4; i++) {
+    var dot = document.getElementById('d'+i);
+    if (dot) dot.className = 'pin-dot' + (i < pinEntry.length ? ' filled' : '');
+  }
+}
+
+function checkPin() {
+  if (pinEntry === CORRECT_PIN) {
+    document.getElementById('pin-screen').classList.add('hide');
+    document.getElementById('main-app').style.display = 'block';
+    setHeaderDate();
+    loadData();
+  } else {
+    document.getElementById('pin-error').textContent = 'Galat PIN — dobara try karo';
+    pinEntry = '';
+    updatePinDots();
+  }
+}
 var DATA = {daily:[],udhar:[],staff:[],staffPayments:[],loans:[],loanPayments:[],creditCards:[]};
 var selectedType = '';
 var selectedUdhar = '';
@@ -204,9 +286,7 @@ var selectedStaffNaam = '';
 
 // INIT
 window.onload = function() {
-  document.getElementById('main-app').style.display = 'block';
-  setHeaderDate();
-  loadData();
+  // PIN screen already visible by default
 };
 
 function setHeaderDate() {
