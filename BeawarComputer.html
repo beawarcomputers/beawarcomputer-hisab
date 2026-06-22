@@ -1,0 +1,703 @@
+<!DOCTYPE html>
+<html lang="hi">
+<head>
+<meta charset="UTF-8"/>
+<meta name="viewport" content="width=device-width,initial-scale=1,maximum-scale=1"/>
+<meta name="apple-mobile-web-app-capable" content="yes"/>
+<meta name="mobile-web-app-capable" content="yes"/>
+<meta name="apple-mobile-web-app-title" content="BC Hisab"/>
+<title>Beawar Computer — Hisab</title>
+<style>
+:root{
+  --blue:#185FA5;--blue-light:#E6F1FB;--blue-dark:#0C447C;
+  --green:#1D9E75;--green-light:#E1F5EE;--green-dark:#085041;
+  --red:#E24B4A;--red-light:#FCEBEB;--red-dark:#791F1F;
+  --amber:#BA7517;--amber-light:#FAEEDA;--amber-dark:#633806;
+  --purple:#7F77DD;--purple-light:#EEEDFE;--purple-dark:#3C3489;
+  --coral:#D85A30;--coral-light:#FAECE7;--coral-dark:#712B13;
+  --bg:#fff;--bg2:#f5f5f3;--bg3:#eeecea;
+  --text:#1a1a1a;--text2:#666;--text3:#999;
+  --border:rgba(0,0,0,0.12);--border2:rgba(0,0,0,0.2);
+  --radius:8px;--radius-lg:12px;
+}
+*{box-sizing:border-box;margin:0;padding:0;-webkit-tap-highlight-color:transparent;}
+body{font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',sans-serif;background:var(--bg3);color:var(--text);font-size:14px;min-height:100vh;}
+.app{max-width:480px;margin:0 auto;background:var(--bg3);min-height:100vh;padding-bottom:80px;}
+
+/* HEADER */
+.header{background:var(--blue);color:#fff;padding:14px 16px 12px;position:sticky;top:0;z-index:100;}
+.header h1{font-size:16px;font-weight:600;letter-spacing:0.01em;}
+.header .sub{font-size:11px;opacity:0.75;margin-top:1px;}
+
+/* BOTTOM NAV */
+.bottom-nav{position:fixed;bottom:0;left:50%;transform:translateX(-50%);width:100%;max-width:480px;background:var(--bg);border-top:0.5px solid var(--border);display:flex;z-index:100;}
+.nav-item{flex:1;display:flex;flex-direction:column;align-items:center;padding:8px 4px 10px;cursor:pointer;color:var(--text3);font-size:10px;gap:3px;transition:color 0.15s;}
+.nav-item svg{width:22px;height:22px;stroke:currentColor;fill:none;stroke-width:1.7;stroke-linecap:round;stroke-linejoin:round;}
+.nav-item.active{color:var(--blue);}
+
+/* PAGES */
+.page{display:none;padding:12px;}
+.page.active{display:block;}
+
+/* SUMMARY CARDS */
+.summary-section{margin-bottom:14px;}
+.summary-label{font-size:11px;font-weight:600;color:var(--text2);margin-bottom:6px;letter-spacing:0.04em;}
+.stat-grid{display:grid;grid-template-columns:1fr 1fr;gap:8px;}
+.stat{background:var(--bg);border-radius:var(--radius);padding:10px 12px;border:0.5px solid var(--border);}
+.stat .slabel{font-size:11px;color:var(--text2);margin-bottom:4px;}
+.stat .sval{font-size:20px;font-weight:600;}
+.sval.green{color:var(--green-dark);}
+.sval.red{color:var(--red-dark);}
+.sval.amber{color:var(--amber-dark);}
+.sval.blue{color:var(--blue-dark);}
+
+/* CARDS */
+.card{background:var(--bg);border-radius:var(--radius-lg);border:0.5px solid var(--border);padding:14px;margin-bottom:10px;}
+.card-title{font-size:13px;font-weight:600;color:var(--text);margin-bottom:10px;}
+
+/* FORM */
+.field{margin-bottom:10px;}
+.field label{display:block;font-size:12px;color:var(--text2);margin-bottom:4px;font-weight:500;}
+.field input,.field select,.field textarea{width:100%;padding:9px 11px;border-radius:var(--radius);border:0.5px solid var(--border2);background:var(--bg2);color:var(--text);font-size:14px;outline:none;appearance:none;}
+.field input:focus,.field select:focus{border-color:var(--blue);background:#fff;}
+.field textarea{resize:none;height:56px;}
+.row2{display:grid;grid-template-columns:1fr 1fr;gap:8px;}
+
+/* TYPE BUTTONS */
+.type-grid{display:grid;grid-template-columns:1fr 1fr;gap:6px;margin-bottom:12px;}
+.tbtn{padding:9px 6px;border-radius:var(--radius);border:0.5px solid var(--border2);font-size:12px;cursor:pointer;text-align:center;color:var(--text2);background:var(--bg2);font-weight:500;transition:all 0.15s;}
+.tbtn.sel-sale{background:var(--green-light);color:var(--green-dark);border-color:var(--green);}
+.tbtn.sel-kharch{background:var(--red-light);color:var(--red-dark);border-color:var(--red);}
+.tbtn.sel-lena{background:var(--amber-light);color:var(--amber-dark);border-color:var(--amber);}
+.tbtn.sel-dena{background:var(--purple-light);color:var(--purple-dark);border-color:var(--purple);}
+.tbtn.sel-salary{background:var(--green-light);color:var(--green-dark);border-color:var(--green);}
+.tbtn.sel-advance{background:var(--amber-light);color:var(--amber-dark);border-color:var(--amber);}
+.tbtn.sel-bonus{background:var(--blue-light);color:var(--blue-dark);border-color:var(--blue);}
+.tbtn.sel-kटौती{background:var(--red-light);color:var(--red-dark);border-color:var(--red);}
+
+/* SAVE BTN */
+.save-btn{width:100%;padding:12px;border-radius:var(--radius);background:var(--blue);color:#fff;border:none;font-size:14px;font-weight:600;cursor:pointer;margin-top:6px;}
+.save-btn:active{opacity:0.85;}
+.save-btn.green{background:var(--green);}
+
+/* TOAST */
+#toast{position:fixed;top:70px;left:50%;transform:translateX(-50%);background:#1a1a1a;color:#fff;padding:10px 18px;border-radius:20px;font-size:13px;z-index:999;opacity:0;transition:opacity 0.3s;pointer-events:none;white-space:nowrap;max-width:90vw;text-align:center;}
+#toast.show{opacity:1;}
+
+/* LIST ITEMS */
+.list-item{display:flex;justify-content:space-between;align-items:center;padding:10px 0;border-bottom:0.5px solid var(--border);}
+.list-item:last-child{border-bottom:none;padding-bottom:0;}
+.li-left .li-name{font-size:13px;font-weight:500;color:var(--text);}
+.li-left .li-sub{font-size:11px;color:var(--text2);margin-top:2px;}
+.li-right{text-align:right;}
+.li-amount{font-size:14px;font-weight:600;}
+.li-amount.green{color:var(--green-dark);}
+.li-amount.red{color:var(--red-dark);}
+.li-amount.amber{color:var(--amber-dark);}
+.li-amount.blue{color:var(--blue-dark);}
+
+/* BADGE */
+.badge{display:inline-block;font-size:10px;padding:2px 7px;border-radius:10px;font-weight:500;}
+.badge.sale{background:var(--green-light);color:var(--green-dark);}
+.badge.kharch{background:var(--red-light);color:var(--red-dark);}
+.badge.lena{background:var(--amber-light);color:var(--amber-dark);}
+.badge.dena{background:var(--purple-light);color:var(--purple-dark);}
+.badge.clear{background:#eee;color:#666;}
+.badge.baaki{background:var(--amber-light);color:var(--amber-dark);}
+.badge.active{background:var(--green-light);color:var(--green-dark);}
+.badge.closed{background:#eee;color:#666;}
+
+/* PROGRESS */
+.prog-bar{height:4px;background:var(--bg3);border-radius:2px;margin-top:6px;}
+.prog-fill{height:4px;border-radius:2px;background:var(--green);}
+
+/* SECTION DIVIDER */
+.sec-div{font-size:11px;font-weight:600;color:var(--text2);margin:14px 0 8px;letter-spacing:0.04em;}
+
+/* ACTION BUTTONS */
+.action-row{display:flex;gap:6px;margin-top:6px;}
+.act-btn{flex:1;padding:7px;border-radius:var(--radius);font-size:12px;font-weight:500;cursor:pointer;border:0.5px solid var(--border2);background:var(--bg2);color:var(--text2);}
+.act-btn.primary{background:var(--blue-light);color:var(--blue-dark);border-color:var(--blue);}
+.act-btn.danger{background:var(--red-light);color:var(--red-dark);border-color:var(--red);}
+
+/* EMPTY STATE */
+.empty{text-align:center;padding:30px 20px;color:var(--text3);}
+.empty svg{width:36px;height:36px;stroke:var(--text3);fill:none;stroke-width:1.5;margin-bottom:8px;}
+.empty p{font-size:13px;}
+
+/* LOADING */
+.loading{text-align:center;padding:40px;color:var(--text2);}
+
+/* SETUP SCREEN */
+#setup-screen{display:none;position:fixed;inset:0;background:var(--bg);z-index:200;padding:24px;}
+#setup-screen.show{display:block;}
+.setup-card{background:var(--bg2);border-radius:var(--radius-lg);padding:20px;margin-bottom:16px;}
+.setup-card h3{font-size:14px;font-weight:600;margin-bottom:4px;}
+.setup-card p{font-size:12px;color:var(--text2);line-height:1.6;}
+.step-num{display:inline-block;width:22px;height:22px;background:var(--blue);color:#fff;border-radius:50%;font-size:11px;font-weight:600;text-align:center;line-height:22px;margin-right:6px;}
+</style>
+</head>
+<body>
+
+
+
+<div class="app" id="main-app" style="display:none;">
+  <div class="header">
+    <div style="display:flex;justify-content:space-between;align-items:center;">
+      <div>
+        <h1>Beawar Computer</h1>
+        <div class="sub" id="header-date"></div>
+      </div>
+      <div id="sync-btn" onclick="loadData()" style="cursor:pointer;opacity:0.85;">
+        <svg width="20" height="20" stroke="#fff" fill="none" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polyline points="1 4 1 10 7 10"/><path d="M3.51 15a9 9 0 1 0 .49-4.7L1 10"/></svg>
+      </div>
+    </div>
+  </div>
+
+  <!-- PAGES -->
+  <div id="page-summary" class="page active"></div>
+  <div id="page-entry" class="page"></div>
+  <div id="page-udhar" class="page"></div>
+  <div id="page-staff" class="page"></div>
+  <div id="page-emi" class="page"></div>
+
+  <!-- BOTTOM NAV -->
+  <div class="bottom-nav">
+    <div class="nav-item active" onclick="showPage('summary',this)">
+      <svg viewBox="0 0 24 24"><rect x="3" y="3" width="7" height="7"/><rect x="14" y="3" width="7" height="7"/><rect x="3" y="14" width="7" height="7"/><rect x="14" y="14" width="7" height="7"/></svg>
+      Summary
+    </div>
+    <div class="nav-item" onclick="showPage('entry',this)">
+      <svg viewBox="0 0 24 24"><circle cx="12" cy="12" r="10"/><line x1="12" y1="8" x2="12" y2="16"/><line x1="8" y1="12" x2="16" y2="12"/></svg>
+      Entry
+    </div>
+    <div class="nav-item" onclick="showPage('udhar',this)">
+      <svg viewBox="0 0 24 24"><path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"/><circle cx="9" cy="7" r="4"/><path d="M23 21v-2a4 4 0 0 0-3-3.87"/><path d="M16 3.13a4 4 0 0 1 0 7.75"/></svg>
+      Udhar
+    </div>
+    <div class="nav-item" onclick="showPage('staff',this)">
+      <svg viewBox="0 0 24 24"><path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2"/><circle cx="12" cy="7" r="4"/></svg>
+      Staff
+    </div>
+    <div class="nav-item" onclick="showPage('emi',this)">
+      <svg viewBox="0 0 24 24"><rect x="1" y="4" width="22" height="16" rx="2"/><line x1="1" y1="10" x2="23" y2="10"/></svg>
+      EMI
+    </div>
+  </div>
+</div>
+
+<div id="toast"></div>
+
+<script>
+var API_URL = 'https://script.google.com/macros/s/AKfycbzC0Dbgfth02Yhe0ThxIDnM-5dakese-gK8LJwVh7uJhJgBpYAUrNqXTLiXaodGQMMu/exec';
+var DATA = {daily:[],udhar:[],staff:[],staffPayments:[],loans:[],loanPayments:[]};
+var selectedType = '';
+var selectedUdhar = '';
+var selectedStaffType = '';
+var selectedStaffId = '';
+var selectedStaffNaam = '';
+
+// INIT
+window.onload = function() {
+  document.getElementById('main-app').style.display = 'block';
+  setHeaderDate();
+  loadData();
+};
+
+function setHeaderDate() {
+  var days = ['Sunday','Monday','Tuesday','Wednesday','Thursday','Friday','Saturday'];
+  var months = ['Jan','Feb','Mar','Apr','May','Jun','Jul','Aug','Sep','Oct','Nov','Dec'];
+  var d = new Date();
+  document.getElementById('header-date').textContent = days[d.getDay()] + ', ' + d.getDate() + ' ' + months[d.getMonth()] + ' ' + d.getFullYear();
+}
+
+function api(params, cb) {
+  var qs = Object.keys(params).map(k => k+'='+encodeURIComponent(params[k])).join('&');
+  fetch(API_URL + '?' + qs)
+    .then(r => r.json())
+    .then(cb)
+    .catch(function(e){ showToast('Connection error — internet check karo'); cb({success:false}); });
+}
+
+function loadData() {
+  showToast('Data load ho raha hai...');
+  api({action:'getAll'}, function(res) {
+    if (res.success) {
+      DATA = res;
+      renderSummary();
+      renderUdhar();
+      renderStaff();
+      renderEmi();
+      showToast('Data updated!');
+    } else {
+      showToast('Load failed — retry karo');
+    }
+  });
+}
+
+// PAGES
+function showPage(name, el) {
+  document.querySelectorAll('.page').forEach(p => p.classList.remove('active'));
+  document.querySelectorAll('.nav-item').forEach(n => n.classList.remove('active'));
+  document.getElementById('page-'+name).classList.add('active');
+  el.classList.add('active');
+  if (name === 'entry') renderEntryPage();
+  if (name === 'udhar') renderUdhar();
+  if (name === 'staff') renderStaff();
+  if (name === 'emi') renderEmi();
+}
+
+// TOAST
+function showToast(msg) {
+  var t = document.getElementById('toast');
+  t.textContent = msg;
+  t.classList.add('show');
+  clearTimeout(window._toastT);
+  window._toastT = setTimeout(function(){ t.classList.remove('show'); }, 2500);
+}
+
+// FORMAT
+function fmt(n) {
+  return '₹' + Math.round(n).toLocaleString('en-IN');
+}
+
+function todayStr() {
+  var d = new Date();
+  return ('0'+d.getDate()).slice(-2)+'/'+('0'+(d.getMonth()+1)).slice(-2)+'/'+d.getFullYear();
+}
+
+function parseDate(s) {
+  if (!s) return null;
+  var p = s.toString().split('/');
+  if (p.length === 3) return new Date(parseInt(p[2]), parseInt(p[1])-1, parseInt(p[0]));
+  return new Date(s);
+}
+
+function isToday(s) {
+  var d = parseDate(s); if (!d) return false;
+  var n = new Date();
+  return d.getDate()===n.getDate() && d.getMonth()===n.getMonth() && d.getFullYear()===n.getFullYear();
+}
+
+function isThisWeek(s) {
+  var d = parseDate(s); if (!d) return false;
+  var n = new Date(); var diff = (n - d)/(1000*60*60*24);
+  return diff >= 0 && diff < 7;
+}
+
+function isThisMonth(s) {
+  var d = parseDate(s); if (!d) return false;
+  var n = new Date();
+  return d.getMonth()===n.getMonth() && d.getFullYear()===n.getFullYear();
+}
+
+// SUMMARY
+function calcPeriod(rows, period) {
+  var sale=0, kharch=0, udharLena=0, udharDena=0;
+  rows.forEach(function(r) {
+    var check = period==='today' ? isToday(r.Date) : period==='week' ? isThisWeek(r.Date) : isThisMonth(r.Date);
+    if (!check) return;
+    var amt = parseFloat(r.Amount)||0;
+    if (r.Type==='Sale') sale += amt;
+    else if (r.Type==='Kharch') kharch += amt;
+    else if (r.Type==='Udhar Lena') udharLena += amt;
+    else if (r.Type==='Udhar Dena') udharDena += amt;
+  });
+  return {sale, kharch, net: sale - kharch, udharLena, udharDena};
+}
+
+function renderSummary() {
+  var aaj = calcPeriod(DATA.daily, 'today');
+  var hafte = calcPeriod(DATA.daily, 'week');
+  var mahine = calcPeriod(DATA.daily, 'month');
+
+  var totalUdharLena = 0, totalUdharDena = 0;
+  (DATA.udhar||[]).forEach(function(u) {
+    var b = parseFloat(u.Baaki)||0;
+    if (u.Type==='Lena' && u.Status==='Baaki') totalUdharLena += b;
+    if (u.Type==='Dena' && u.Status==='Baaki') totalUdharDena += b;
+  });
+
+  var totalEmi = 0;
+  (DATA.loans||[]).forEach(function(l) {
+    if (l.Status==='Active') totalEmi += parseFloat(l.EMI)||0;
+  });
+
+  var html = '';
+
+  function periodBlock(label, d) {
+    return '<div class="summary-section"><div class="summary-label">'+label+'</div><div class="stat-grid">'+
+      '<div class="stat"><div class="slabel">Sale</div><div class="sval green">'+fmt(d.sale)+'</div></div>'+
+      '<div class="stat"><div class="slabel">Kharch</div><div class="sval red">'+fmt(d.kharch)+'</div></div>'+
+      '<div class="stat"><div class="slabel">Net Cash</div><div class="sval '+(d.net>=0?'green':'red')+'">'+fmt(d.net)+'</div></div>'+
+      '<div class="stat"><div class="slabel">Profit/Loss</div><div class="sval '+(d.net>=0?'green':'red')+'">'+fmt(d.net)+'</div></div>'+
+      '</div></div>';
+  }
+
+  html += periodBlock('AAJ KA HISAB', aaj);
+  html += periodBlock('IS HAFTE KA', hafte);
+  html += periodBlock('IS MAHINE KA', mahine);
+
+  html += '<div class="summary-section"><div class="summary-label">BAAKI HISAB</div><div class="stat-grid">'+
+    '<div class="stat"><div class="slabel">Udhar Lena</div><div class="sval amber">'+fmt(totalUdharLena)+'</div></div>'+
+    '<div class="stat"><div class="slabel">Udhar Dena</div><div class="sval blue">'+fmt(totalUdharDena)+'</div></div>'+
+    '<div class="stat"><div class="slabel">Monthly EMI</div><div class="sval red">'+fmt(totalEmi)+'</div></div>'+
+    '</div></div>';
+
+  document.getElementById('page-summary').innerHTML = html;
+}
+
+// ENTRY PAGE
+function renderEntryPage() {
+  selectedType = '';
+  var html = '<div class="card">'+
+    '<div class="card-title">Daily Entry</div>'+
+    '<div class="type-grid">'+
+    '<div class="tbtn" id="tb-Sale" onclick="selType(\'Sale\')">↑ Sale</div>'+
+    '<div class="tbtn" id="tb-Kharch" onclick="selType(\'Kharch\')">↓ Kharch</div>'+
+    '<div class="tbtn" id="tb-UdharLena" onclick="selType(\'Udhar Lena\')">← Udhar Lena</div>'+
+    '<div class="tbtn" id="tb-UdharDena" onclick="selType(\'Udhar Dena\')">→ Udhar Dena</div>'+
+    '</div>'+
+    '<div class="field"><label>Amount (₹)</label><input type="number" id="e-amount" placeholder="0" inputmode="numeric"/></div>'+
+    '<div class="field" id="party-field" style="display:none;"><label>Party ka naam</label><input type="text" id="e-party" placeholder="Customer / Supplier naam"/></div>'+
+    '<div class="field"><label>Note (optional)</label><input type="text" id="e-note" placeholder="Kya becha ya kharch kiya"/></div>'+
+    '<button class="save-btn" onclick="saveEntry()">Save Entry</button>'+
+    '</div>'+
+    '<div class="card" style="margin-top:10px;">'+
+    '<div class="card-title">Aaj ki entries</div>'+
+    '<div id="today-list"></div>'+
+    '</div>';
+  document.getElementById('page-entry').innerHTML = html;
+  renderTodayList();
+}
+
+function selType(t) {
+  selectedType = t;
+  ['Sale','Kharch','UdharLena','UdharDena'].forEach(function(x) {
+    var el = document.getElementById('tb-'+x);
+    if (el) el.className = 'tbtn';
+  });
+  var key = t.replace(' ','');
+  var el = document.getElementById('tb-'+key);
+  if (el) {
+    var cls = {Sale:'sel-sale',Kharch:'sel-kharch','UdharLena':'sel-lena','UdharDena':'sel-dena'}[key];
+    el.className = 'tbtn ' + cls;
+  }
+  var pf = document.getElementById('party-field');
+  if (pf) pf.style.display = (t==='Udhar Lena'||t==='Udhar Dena') ? 'block' : 'none';
+}
+
+function saveEntry() {
+  if (!selectedType) { showToast('Pehle type chuno'); return; }
+  var amt = document.getElementById('e-amount').value;
+  if (!amt || parseFloat(amt) <= 0) { showToast('Amount daalo'); return; }
+  var party = document.getElementById('e-party') ? document.getElementById('e-party').value : '';
+  var note = document.getElementById('e-note').value;
+  if ((selectedType==='Udhar Lena'||selectedType==='Udhar Dena') && !party) {
+    showToast('Party naam daalo'); return;
+  }
+  showToast('Save ho raha hai...');
+  api({action:'addDaily', data: JSON.stringify({type:selectedType, amount:amt, party:party, note:note})}, function(res) {
+    if (res.success) {
+      showToast('Entry save ho gayi!');
+      loadData();
+      renderEntryPage();
+    } else showToast('Error — dobara try karo');
+  });
+}
+
+function renderTodayList() {
+  var el = document.getElementById('today-list');
+  if (!el) return;
+  var today = (DATA.daily||[]).filter(r => isToday(r.Date));
+  if (today.length === 0) { el.innerHTML = '<div class="empty"><p>Aaj koi entry nahi</p></div>'; return; }
+  var html = '';
+  today.slice().reverse().forEach(function(r) {
+    var typeKey = r.Type==='Sale'?'sale':r.Type==='Kharch'?'kharch':r.Type==='Udhar Lena'?'lena':'dena';
+    var amtCls = r.Type==='Sale'?'green':r.Type==='Kharch'?'red':r.Type==='Udhar Lena'?'amber':'blue';
+    html += '<div class="list-item">'+
+      '<div class="li-left">'+
+        '<div class="li-name">'+(r.Note||r.Type)+'</div>'+
+        '<div class="li-sub"><span class="badge '+typeKey+'">'+r.Type+'</span>'+(r.Party?' · '+r.Party:'')+'</div>'+
+      '</div>'+
+      '<div class="li-right"><div class="li-amount '+amtCls+'">'+fmt(parseFloat(r.Amount))+'</div><div style="font-size:10px;color:var(--text3);">'+r.Time+'</div></div>'+
+      '</div>';
+  });
+  el.innerHTML = html;
+}
+
+// UDHAR
+function renderUdhar() {
+  selectedUdhar = '';
+  var lena = (DATA.udhar||[]).filter(u => u.Type==='Lena' && u.Status==='Baaki');
+  var dena = (DATA.udhar||[]).filter(u => u.Type==='Dena' && u.Status==='Baaki');
+  var cleared = (DATA.udhar||[]).filter(u => u.Status==='Clear');
+
+  var html = '<div class="card">'+
+    '<div class="card-title">Naya Udhar</div>'+
+    '<div class="type-grid">'+
+    '<div class="tbtn" id="u-lena" onclick="selUdhar(\'Lena\')">← Lena Hai</div>'+
+    '<div class="tbtn" id="u-dena" onclick="selUdhar(\'Dena\')">→ Dena Hai</div>'+
+    '</div>'+
+    '<div class="field"><label>Party naam</label><input type="text" id="u-party" placeholder="Customer / Supplier"/></div>'+
+    '<div class="row2">'+
+    '<div class="field"><label>Amount (₹)</label><input type="number" id="u-amount" placeholder="0" inputmode="numeric"/></div>'+
+    '<div class="field"><label>Tarikh</label><input type="date" id="u-date"/></div>'+
+    '</div>'+
+    '<div class="field"><label>Note</label><input type="text" id="u-note" placeholder="Kisliye"/></div>'+
+    '<button class="save-btn" onclick="saveUdhar()">Save Udhar</button>'+
+    '</div>';
+
+  if (lena.length > 0) {
+    html += '<div class="card"><div class="card-title" style="color:var(--amber-dark);">Lena Hai ('+lena.length+')</div>';
+    lena.forEach(function(u) {
+      html += '<div class="list-item">'+
+        '<div class="li-left"><div class="li-name">'+u.Party+'</div><div class="li-sub">'+u.Date+(u.Note?' · '+u.Note:'')+'</div></div>'+
+        '<div class="li-right">'+
+          '<div class="li-amount amber">'+fmt(parseFloat(u.Baaki))+'</div>'+
+          '<div class="action-row"><button class="act-btn primary" onclick="partialPay(\''+u.ID+'\',\''+u.Party+'\','+u.Baaki+')">Paid</button></div>'+
+        '</div></div>';
+    });
+    html += '</div>';
+  }
+
+  if (dena.length > 0) {
+    html += '<div class="card"><div class="card-title" style="color:var(--purple-dark);">Dena Hai ('+dena.length+')</div>';
+    dena.forEach(function(u) {
+      html += '<div class="list-item">'+
+        '<div class="li-left"><div class="li-name">'+u.Party+'</div><div class="li-sub">'+u.Date+(u.Note?' · '+u.Note:'')+'</div></div>'+
+        '<div class="li-right">'+
+          '<div class="li-amount blue">'+fmt(parseFloat(u.Baaki))+'</div>'+
+          '<div class="action-row"><button class="act-btn primary" onclick="partialPay(\''+u.ID+'\',\''+u.Party+'\','+u.Baaki+')">Diya</button></div>'+
+        '</div></div>';
+    });
+    html += '</div>';
+  }
+
+  if (lena.length===0 && dena.length===0) {
+    html += '<div class="card"><div class="empty"><p>Koi baaki udhar nahi</p></div></div>';
+  }
+
+  if (cleared.length > 0) {
+    html += '<div class="sec-div">CLEAR HO GAYA ('+cleared.length+')</div><div class="card">';
+    cleared.slice(-5).reverse().forEach(function(u) {
+      html += '<div class="list-item"><div class="li-left"><div class="li-name">'+u.Party+'</div><div class="li-sub">'+u.Date+'</div></div>'+
+        '<div class="li-right"><div class="li-amount" style="color:var(--text3)">'+fmt(parseFloat(u.Amount))+'</div><span class="badge clear">Clear</span></div></div>';
+    });
+    html += '</div>';
+  }
+
+  document.getElementById('page-udhar').innerHTML = html;
+  var dateEl = document.getElementById('u-date');
+  if (dateEl) {
+    var d = new Date();
+    dateEl.value = d.getFullYear()+'-'+('0'+(d.getMonth()+1)).slice(-2)+'-'+('0'+d.getDate()).slice(-2);
+  }
+}
+
+function selUdhar(t) {
+  selectedUdhar = t;
+  document.getElementById('u-lena').className = 'tbtn' + (t==='Lena'?' sel-lena':'');
+  document.getElementById('u-dena').className = 'tbtn' + (t==='Dena'?' sel-dena':'');
+}
+
+function saveUdhar() {
+  if (!selectedUdhar) { showToast('Lena/Dena chuno'); return; }
+  var party = document.getElementById('u-party').value.trim();
+  var amt = document.getElementById('u-amount').value;
+  var note = document.getElementById('u-note').value;
+  var date = document.getElementById('u-date').value;
+  if (!party) { showToast('Party naam daalo'); return; }
+  if (!amt || parseFloat(amt) <= 0) { showToast('Amount daalo'); return; }
+  var dateStr = '';
+  if (date) {
+    var dp = date.split('-');
+    dateStr = dp[2]+'/'+dp[1]+'/'+dp[0];
+  }
+  showToast('Save ho raha hai...');
+  api({action:'addUdhar', data: JSON.stringify({party:party, type:selectedUdhar, amount:amt, date:dateStr, note:note})}, function(res) {
+    if (res.success) { showToast('Udhar save ho gaya!'); loadData(); }
+    else showToast('Error — retry karo');
+  });
+}
+
+function partialPay(id, naam, baaki) {
+  var amt = prompt(naam+' ka kitna payment aaya? (Baaki: '+fmt(baaki)+')', baaki);
+  if (!amt || parseFloat(amt) <= 0) return;
+  api({action:'updateUdhar', data: JSON.stringify({id:id, paid:amt})}, function(res) {
+    if (res.success) { showToast('Payment update ho gaya!'); loadData(); }
+    else showToast('Error — retry karo');
+  });
+}
+
+// STAFF
+function renderStaff() {
+  selectedStaffType = '';
+  selectedStaffId = '';
+  selectedStaffNaam = '';
+  var activeStaff = (DATA.staff||[]).filter(s => s.Status==='Active');
+
+  var html = '<div class="card">'+
+    '<div class="card-title">Naya Staff Add</div>'+
+    '<div class="field"><label>Naam</label><input type="text" id="s-naam" placeholder="Staff ka naam"/></div>'+
+    '<div class="row2">'+
+    '<div class="field"><label>Role</label><input type="text" id="s-role" placeholder="Helper, Technician..."/></div>'+
+    '<div class="field"><label>Monthly Salary (₹)</label><input type="number" id="s-salary" placeholder="0" inputmode="numeric"/></div>'+
+    '</div>'+
+    '<button class="save-btn" onclick="saveStaff()">Staff Add Karo</button>'+
+    '</div>';
+
+  if (activeStaff.length > 0) {
+    html += '<div class="sec-div">STAFF LIST</div>';
+    activeStaff.forEach(function(s) {
+      var payments = (DATA.staffPayments||[]).filter(p => p.StaffID==s.ID && isThisMonth(p.Date));
+      var paid = payments.reduce((a,p) => a+(parseFloat(p.Amount)||0), 0);
+      var pending = (parseFloat(s.Salary)||0) - paid;
+      html += '<div class="card">'+
+        '<div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:10px;">'+
+          '<div><div style="font-size:14px;font-weight:600;">'+s.Naam+'</div><div style="font-size:11px;color:var(--text2);">'+s.Role+' · Salary: '+fmt(parseFloat(s.Salary))+'</div></div>'+
+          '<span class="badge active">Active</span>'+
+        '</div>'+
+        '<div class="stat-grid" style="margin-bottom:10px;">'+
+          '<div class="stat"><div class="slabel">Is mahine paid</div><div class="sval green">'+fmt(paid)+'</div></div>'+
+          '<div class="stat"><div class="slabel">Pending</div><div class="sval '+(pending>0?'red':'green')+'">'+fmt(pending>0?pending:0)+'</div></div>'+
+        '</div>'+
+        '<div class="card-title" style="font-size:12px;margin-bottom:8px;">Payment do</div>'+
+        '<div class="type-grid">'+
+          '<div class="tbtn" id="sp-'+s.ID+'-salary" onclick="selStaffType(\''+s.ID+'\',\''+s.Naam+'\',\'Salary\')">Salary</div>'+
+          '<div class="tbtn" id="sp-'+s.ID+'-advance" onclick="selStaffType(\''+s.ID+'\',\''+s.Naam+'\',\'Advance\')">Advance</div>'+
+          '<div class="tbtn" id="sp-'+s.ID+'-bonus" onclick="selStaffType(\''+s.ID+'\',\''+s.Naam+'\',\'Bonus\')">Bonus</div>'+
+          '<div class="tbtn" id="sp-'+s.ID+'-katoti" onclick="selStaffType(\''+s.ID+'\',\''+s.Naam+'\',\'Katoti\')">Katoti</div>'+
+        '</div>'+
+        '<div class="row2">'+
+          '<div class="field"><label>Amount (₹)</label><input type="number" id="sp-amt-'+s.ID+'" placeholder="0" inputmode="numeric"/></div>'+
+          '<div class="field"><label>Note</label><input type="text" id="sp-note-'+s.ID+'" placeholder="Optional"/></div>'+
+        '</div>'+
+        '<button class="save-btn green" onclick="saveStaffPay(\''+s.ID+'\',\''+s.Naam+'\')">Payment Save Karo</button>'+
+        '</div>';
+    });
+  }
+
+  if (activeStaff.length === 0) {
+    html += '<div class="card"><div class="empty"><p>Koi staff nahi add kiya abhi</p></div></div>';
+  }
+
+  document.getElementById('page-staff').innerHTML = html;
+}
+
+function selStaffType(id, naam, type) {
+  selectedStaffId = id;
+  selectedStaffNaam = naam;
+  selectedStaffType = type;
+  ['salary','advance','bonus','katoti'].forEach(function(t) {
+    var el = document.getElementById('sp-'+id+'-'+t);
+    if (el) el.className = 'tbtn';
+  });
+  var el = document.getElementById('sp-'+id+'-'+type.toLowerCase());
+  if (el) {
+    var cls = {Salary:'sel-salary',Advance:'sel-advance',Bonus:'sel-bonus',Katoti:'sel-kharch'}[type];
+    el.className = 'tbtn '+cls;
+  }
+}
+
+function saveStaff() {
+  var naam = document.getElementById('s-naam').value.trim();
+  var role = document.getElementById('s-role').value.trim();
+  var salary = document.getElementById('s-salary').value;
+  if (!naam) { showToast('Naam daalo'); return; }
+  if (!salary || parseFloat(salary) <= 0) { showToast('Salary daalo'); return; }
+  showToast('Save ho raha hai...');
+  api({action:'addStaff', data: JSON.stringify({naam:naam, role:role, salary:salary})}, function(res) {
+    if (res.success) { showToast(naam+' add ho gaya!'); loadData(); }
+    else showToast('Error — retry karo');
+  });
+}
+
+function saveStaffPay(staffId, staffNaam) {
+  if (!selectedStaffType || selectedStaffId !== staffId) { showToast('Payment type chuno'); return; }
+  var amt = document.getElementById('sp-amt-'+staffId).value;
+  var note = document.getElementById('sp-note-'+staffId).value;
+  if (!amt || parseFloat(amt) <= 0) { showToast('Amount daalo'); return; }
+  showToast('Save ho raha hai...');
+  api({action:'addStaffPayment', data: JSON.stringify({staffId:staffId, staffNaam:staffNaam, type:selectedStaffType, amount:amt, note:note})}, function(res) {
+    if (res.success) { showToast(staffNaam+' ka payment save ho gaya!'); loadData(); }
+    else showToast('Error — retry karo');
+  });
+}
+
+// EMI
+function renderEmi() {
+  var active = (DATA.loans||[]).filter(l => l.Status==='Active');
+  var closed = (DATA.loans||[]).filter(l => l.Status==='Closed');
+
+  var html = '<div class="card">'+
+    '<div class="card-title">Naya Loan Add</div>'+
+    '<div class="field"><label>Loan naam</label><input type="text" id="l-naam" placeholder="Car Loan, Personal Loan..."/></div>'+
+    '<div class="row2">'+
+    '<div class="field"><label>Monthly EMI (₹)</label><input type="number" id="l-emi" placeholder="0" inputmode="numeric"/></div>'+
+    '<div class="field"><label>Kitni EMI baaki</label><input type="number" id="l-left" placeholder="0" inputmode="numeric"/></div>'+
+    '</div>'+
+    '<div class="field"><label>Total loan amount (₹)</label><input type="number" id="l-total" placeholder="0" inputmode="numeric"/></div>'+
+    '<button class="save-btn" onclick="saveLoan()">Loan Add Karo</button>'+
+    '</div>';
+
+  if (active.length > 0) {
+    html += '<div class="sec-div">ACTIVE LOANS</div><div class="card">';
+    active.forEach(function(l) {
+      var total = parseFloat(l.TotalAmount)||0;
+      var emiLeft = parseInt(l.EMILeft)||0;
+      var emi = parseFloat(l.EMI)||0;
+      var paid = total - (emiLeft * emi);
+      var pct = total > 0 ? Math.min(100, Math.round((paid/total)*100)) : Math.round((1 - emiLeft/30)*100);
+      html += '<div class="progress-wrap" style="padding:10px 0;border-bottom:0.5px solid var(--border);">'+
+        '<div style="display:flex;justify-content:space-between;align-items:center;">'+
+          '<div><div style="font-size:13px;font-weight:600;">'+l.Naam+'</div><div style="font-size:11px;color:var(--text2);">'+fmt(emi)+'/month · '+emiLeft+' EMI baaki</div></div>'+
+          '<button class="act-btn primary" style="width:auto;padding:6px 10px;" onclick="payLoanEmi(\''+l.ID+'\',\''+l.Naam+'\')">EMI Di</button>'+
+        '</div>'+
+        '<div class="prog-bar"><div class="prog-fill" style="width:'+pct+'%"></div></div>'+
+        '</div>';
+    });
+    html += '</div>';
+  }
+
+  if (active.length === 0) {
+    html += '<div class="card"><div class="empty"><p>Koi active loan nahi</p></div></div>';
+  }
+
+  if (closed.length > 0) {
+    html += '<div class="sec-div">CLOSED LOANS</div><div class="card">';
+    closed.forEach(function(l) {
+      html += '<div class="list-item"><div class="li-left"><div class="li-name">'+l.Naam+'</div><div class="li-sub">'+fmt(parseFloat(l.TotalAmount))+' total</div></div>'+
+        '<div class="li-right"><span class="badge closed">Closed</span></div></div>';
+    });
+    html += '</div>';
+  }
+
+  document.getElementById('page-emi').innerHTML = html;
+}
+
+function saveLoan() {
+  var naam = document.getElementById('l-naam').value.trim();
+  var emi = document.getElementById('l-emi').value;
+  var left = document.getElementById('l-left').value;
+  var total = document.getElementById('l-total').value;
+  if (!naam) { showToast('Loan naam daalo'); return; }
+  if (!emi || parseFloat(emi) <= 0) { showToast('EMI amount daalo'); return; }
+  if (!left || parseInt(left) <= 0) { showToast('Kitni EMI baaki hai daalo'); return; }
+  showToast('Save ho raha hai...');
+  api({action:'addLoan', data: JSON.stringify({naam:naam, emi:emi, emiLeft:left, total:total||0})}, function(res) {
+    if (res.success) { showToast(naam+' add ho gaya!'); loadData(); }
+    else showToast('Error — retry karo');
+  });
+}
+
+function payLoanEmi(id, naam) {
+  if (!confirm(naam+' ki ek EMI paid mark karu?')) return;
+  api({action:'payEmi', data: JSON.stringify({id:id})}, function(res) {
+    if (res.success) { showToast('EMI marked paid!'); loadData(); }
+    else showToast('Error — retry karo');
+  });
+}
+</script>
+</body>
+</html>
